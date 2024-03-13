@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage     = 'https://github.com/spicyShrimp/SnapKitExtend'
   s.author       = { 'spricyShrimp' => '78268731@qq.com' }
   s.source       = { :git => 'https://github.com/spicyShrimp/SnapKitExtend.git', :tag => '1.1.0' }
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '12.0'
   s.osx.deployment_target = '10.11'
   s.tvos.deployment_target = '10.0'
   s.source_files = 'SnapKitExtend/*.swift'
