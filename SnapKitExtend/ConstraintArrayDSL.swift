@@ -300,6 +300,70 @@ public struct ConstraintArrayDSL {
         }
     }
     
+    /// distribute with the width that you give
+    /// you should calculate the width of each item first
+    ///
+    /// - Parameters:
+    ///   - verticalSpacing: the vertical spacing between each item
+    ///   - horizontalSpacing: the horizontal spacing between each item
+    ///   - tailSpacing: the spacing after the last item and the container
+    ///   - maxWidth: the max width of each row or each item
+    ///   - determineWidths: the width of each item, you must ensure determineWidths.count == self.array.count
+    ///   - itemHeight: the height of each item
+    ///   - edgeInset: the edgeInset of all item, default is UIEdgeInsets.zero
+    ///                if edgeInset.left or edgeInset.right is not 0, the maxWidth will change, maxWidth -=  (edgeInset.left +  edgeInset.right)
+    ///   - topConstrainView: the view before the first item
+    public func distributeDetermineWidthViews(verticalSpacing: CGFloat,
+                                              horizontalSpacing: CGFloat,
+                                              maxWidth: CGFloat,
+                                              determineWidths: [CGFloat],
+                                              itemHeight: CGFloat,
+                                              edgeInset: UIEdgeInsets = UIEdgeInsets.zero,
+                                              topConstrainView: ConstraintView? = nil) {
+        
+        guard self.array.count > 1, determineWidths.count == self.array.count, let tempSuperview = commonSuperviewOfViews() else {
+            return
+        }
+        
+        var prev : ConstraintView?
+        var vMinX: CGFloat = 0
+        
+        let maxW = maxWidth - (edgeInset.right + edgeInset.left)
+        
+        for (i,v) in self.array.enumerated() {
+            
+            let curWidth = min(determineWidths[i], maxW)
+            v.snp.makeConstraints({ (make) in
+                make.width.equalTo(curWidth)
+                make.bottom.lessThanOrEqualTo(tempSuperview).offset(-edgeInset.bottom)
+                make.height.equalTo(itemHeight)
+                
+                if prev == nil { // the first one
+                    let tmpTarget = topConstrainView != nil ? topConstrainView!.snp.bottom : tempSuperview.snp.top
+                    make.top.equalTo(tmpTarget).offset(edgeInset.top)
+                    make.left.equalTo(tempSuperview).offset(edgeInset.left)
+                    vMinX = curWidth + horizontalSpacing
+                }
+                else {
+                    make.right.lessThanOrEqualToSuperview().offset(-edgeInset.right)
+                    
+                    if vMinX + curWidth > maxW {
+                        make.top.equalTo(prev!.snp.bottom).offset(verticalSpacing)
+                        make.left.equalTo(tempSuperview).offset(edgeInset.left)
+                        vMinX = curWidth + horizontalSpacing
+                    }
+                    else {
+                        make.top.equalTo(prev!)
+                        make.left.equalTo(prev!.snp.right).offset(horizontalSpacing)
+                        vMinX += curWidth + horizontalSpacing
+                    }
+                }
+            })
+            
+            prev = v
+        }
+    }
+    
     internal let array: Array<ConstraintView>
     
     internal init(array: Array<ConstraintView>) {
